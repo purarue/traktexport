@@ -42,7 +42,7 @@ def _trakt_request(
     *,
     sleep_time: int = SLEEP_TIME,
     logger: Optional[logging.Logger] = None,
-    method: Literal["get", "post", "patch"] = "get",
+    method: Literal["get", "put", "post", "patch"] = "get",
 ) -> Any:
     """
     Uses api().request (configured trakt session handled by trakt)
