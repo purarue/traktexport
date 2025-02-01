@@ -84,25 +84,24 @@ $ python3 -m traktexport export yourTraktUsername > data.json
 You can also export a part of your recent history, instead of your entire history (as that tends to take a few minutes)
 
 ```
-traktexport partial_export --help
 Usage: traktexport partial_export [OPTIONS] USERNAME
 
-  Run a partial history export - assumes authentication has already
-  been setup
+  Run a partial history export - assumes authentication has already been setup
 
-  This exports your movie/TV show history from Trakt without all
-  the other attributes. You can specify --pages to only request the
-  first few pages so this doesn't take ages to run.
+  This exports your movie/TV show history from Trakt without all the other
+  attributes. You can specify --pages or --days to only request the first few
+  pages so this doesn't take ages to run.
 
-  The 'merge' command takes multiple partial exports (or full
-  exports) and merges them all together into a complete history
+  The 'merge' command takes multiple partial exports (or full exports) and
+  merges them all together into a complete history
 
 Options:
   --pages INTEGER  Only request these many pages of your history
+  --days INTEGER   Request history till this many days ago
   --help           Show this message and exit.
 ```
 
-E.g. To export your most recent 100 watches, you can run `traktexport partial_export yourTraktUsername --pages 1`
+E.g. To export your most recent 100 watches, you can run `traktexport partial_export yourTraktUsername --pages 1`. To request till you have history from the last month, you can provide `--days 30`.
 
 Those can then all be combined by the `merge` command, like: `traktexport merge ~/data/trakt/*.json`
 
