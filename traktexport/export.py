@@ -1,12 +1,14 @@
+import sys
 import os
 import logging
+import shlex
 from time import sleep
 from typing import Dict, Any, Iterator, List, Optional, Literal
 from functools import lru_cache
-from urllib.parse import urljoin
 
 import backoff  # type: ignore[import]
-from trakt.core import CORE, BASE_URL  # type: ignore[import]
+from trakt.core import api, BASE_URL  # type: ignore[import]
+from trakt.api import TokenAuth  # type: ignore[import]
 from trakt.errors import RateLimitException  # type: ignore[import]
 from logzero import logger  # type: ignore[import]
 
@@ -17,11 +19,17 @@ def _check_config() -> None:
 
     if not os.path.exists(traktexport_cfg):
         raise FileNotFoundError(
-            f"Config file '{traktexport_cfg}' not found. Run 'traktexport auth' to create it."
+            f"Config file '{traktexport_cfg}' not found. Run '{shlex.quote(sys.executable)} -m traktexport auth' to create it."
         )
 
     # loads config and refreshes token if needed
-    CORE._bootstrap()
+    client = api()
+    auth: TokenAuth | None = client.auth
+    if auth is None:
+        raise ValueError(f"No auth config found on client={client}")
+
+    # this refreshes the token, if needed
+    auth.get_token()
 
 
 SLEEP_TIME = int(os.environ.get("TRAKTEXPORT_SLEEP_TIME", 2))
@@ -37,23 +45,25 @@ def _trakt_request(
     method: Literal["get", "post", "patch"] = "get",
 ) -> Any:
     """
-    Uses CORE._handle_request (configured trakt session handled by trakt)
+    Uses api().request (configured trakt session handled by trakt)
     to request information from Trakt
 
-    This uses the bare CORE._handle_request instead of the wrapper
+    This uses the bare base request instead of the wrapper
     types so that I have access to more info
 
     the trakt module here is used for authentication, I just
     create the URLs/save the entire response
 
     endpoint: The URL to make a request to, doesn't include the domain
-    method is lowercase because _handle_request expects it to be
+    method is lowercase because api().request expects it to be a relative URI
     """
     _check_config()
-    url = urljoin(BASE_URL, endpoint)
+    if endpoint.startswith("/"):
+        endpoint = endpoint[1:]
     if logger:
-        logger.debug(f"Requesting '{url}'...")
-    json_data = CORE._handle_request(method=method, url=url, data=data)
+        logger.debug(f"Requesting '{BASE_URL}{endpoint}'...")
+    # api is lru_cache(maxsize=None), returns the globally configured client
+    json_data = api().request(method=method, url=endpoint, data=data)
     if sleep_time:
         sleep(sleep_time)
     return json_data
