@@ -4,7 +4,7 @@ import logging
 import shlex
 from time import sleep, time
 from typing import Callable, Dict, Any, Iterator, List, Optional, Literal
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
 from functools import lru_cache, partial
 
 import backoff  # type: ignore[import]
