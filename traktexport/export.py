@@ -24,7 +24,7 @@ def _check_config() -> None:
 
     # loads config and refreshes token if needed
     client = api()
-    auth: TokenAuth | None = client.auth
+    auth: Optional[TokenAuth] = client.auth
     if auth is None:
         raise ValueError(f"No auth config found on client={client}")
 
