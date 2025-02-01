@@ -124,7 +124,7 @@ def full_export(username: str) -> Dict[str, Any]:
 
 
 def _history_is_finished(
-    items: list[Any], days: int, now: Optional[float] = None
+    items: List[Any], days: int, now: Optional[float] = None
 ) -> bool:
     from .dal import _parse_trakt_datetime
 
