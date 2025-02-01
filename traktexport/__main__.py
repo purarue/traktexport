@@ -74,19 +74,25 @@ def _export(username: str) -> None:
     default=None,
     help="Only request these many pages of your history",
 )
-def _partial_export(username: str, pages: Optional[int]) -> None:
+@click.option(
+    "--days",
+    type=int,
+    default=None,
+    help="Request history till this many days ago",
+)
+def _partial_export(username: str, pages: Optional[int], days: Optional[int]) -> None:
     """
     Run a partial history export - assumes authentication has already been setup
 
     This exports your movie/TV show history from Trakt without all the other
-    attributes. You can specify --pages to only request the first few pages
-    so this doesn't take ages to run.
+    attributes. You can specify --pages or --days to only request the
+    first few pages so this doesn't take ages to run.
 
     The 'merge' command takes multiple partial exports (or full exports)
     and merges them all together into a complete history
     """
     with handle_trakt_unavailable():
-        click.echo(json.dumps(partial_export(username, pages=pages)))
+        click.echo(json.dumps(partial_export(username, pages=pages, days=days)))
 
 
 @main.command(name="inspect", short_help="read/interact with an export file")

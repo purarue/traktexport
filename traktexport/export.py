@@ -2,9 +2,10 @@ import sys
 import os
 import logging
 import shlex
-from time import sleep
-from typing import Dict, Any, Iterator, List, Optional, Literal
-from functools import lru_cache
+from time import sleep, time
+from typing import Callable, Dict, Any, Iterator, List, Optional, Literal
+from datetime import datetime, timezone, timedelta
+from functools import lru_cache, partial
 
 import backoff  # type: ignore[import]
 from trakt.core import api, BASE_URL  # type: ignore[import]
@@ -72,7 +73,9 @@ def _trakt_request(
 def _trakt_paginate(
     endpoint_bare: str,
     limit: int = 100,
-    request_pages: Optional[int] = None,
+    *,
+    pages: Optional[int] = None,
+    is_finished: Optional[Callable[[List[Any]], bool]] = None,
     logger: Optional[logging.Logger] = None,
 ) -> Iterator[Any]:
     page = 1
@@ -86,7 +89,9 @@ def _trakt_paginate(
             logger.debug(f"First item: {items[0]}")
         yield from items
         page += 1
-        if request_pages is not None and page > request_pages:
+        if is_finished is not None and callable(is_finished) and is_finished(items):
+            break
+        if pages is not None and page > pages:
             break
 
 
@@ -118,13 +123,38 @@ def full_export(username: str) -> Dict[str, Any]:
     }
 
 
-def partial_export(username: str, pages: Optional[int] = None) -> Dict[str, Any]:
+def _history_is_finished(
+    items: list[Any], days: int, now: Optional[float] = None
+) -> bool:
+    from .dal import _parse_trakt_datetime
+
+    if "watched_at" not in items[-1]:
+        raise ValueError(f"No 'watched_at' in {items[-1]}")
+
+    current = now or time()
+    watched_at = _parse_trakt_datetime(items[-1]["watched_at"]).timestamp()
+
+    diff = timedelta(seconds=current - watched_at)
+    return diff.days >= days
+
+
+def partial_export(
+    username: str, pages: Optional[int] = None, days: Optional[int] = None
+) -> Dict[str, Any]:
     """Runs a partial history export for a trakt user, i.e. grabs the first 'n' pages of history entries"""
+    is_finished = None
+    if days:
+        is_finished = partial(
+            _history_is_finished, days=days, now=datetime.now().timestamp()
+        )
     return {
         "type": "partial",
         "history": list(
             _trakt_paginate(
-                f"users/{username}/history", request_pages=pages, logger=logger
+                f"users/{username}/history",
+                pages=pages,
+                logger=logger,
+                is_finished=is_finished,
             )
         ),
     }
