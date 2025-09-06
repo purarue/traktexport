@@ -8,7 +8,7 @@ This is also used internally in [trakt-watch](https://github.com/purarue/trakt-w
 
 ## Installation
 
-Requires `python3.8+`
+Requires `python3.9+`
 
 To install with pip, run:
 
