@@ -1,6 +1,7 @@
 import sys
 import json
-from typing import Optional, Sequence, Generator
+from typing import Optional
+from collections.abc import Sequence, Generator
 from contextlib import contextmanager
 
 import click
@@ -25,7 +26,6 @@ def handle_trakt_unavailable() -> Generator[None, None, None]:
 @click.group()
 def main() -> None:
     """Export data from your Trakt account"""
-    pass
 
 
 @main.command(short_help="setup authentication")
@@ -101,7 +101,7 @@ def _inspect(export_file: str) -> None:
     """
     Given an export JSON file, this parses the info into python objects
     """
-    with open(export_file, "r") as f:
+    with open(export_file) as f:
         data: TraktExport = parse_export(f)  # noqa
     click.secho("Use 'data' to interact with the parsed TraktExport object", fg="green")
 

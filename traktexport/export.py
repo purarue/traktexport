@@ -3,7 +3,8 @@ import os
 import logging
 import shlex
 from time import sleep, time
-from typing import Callable, Dict, Any, Iterator, List, Optional, Literal
+from typing import Callable, Any, Optional, Literal
+from collections.abc import Iterator
 from datetime import datetime, timedelta
 from functools import lru_cache, partial
 
@@ -75,12 +76,12 @@ def _trakt_paginate(
     limit: int = 100,
     *,
     pages: Optional[int] = None,
-    is_finished: Optional[Callable[[List[Any]], bool]] = None,
+    is_finished: Optional[Callable[[list[Any]], bool]] = None,
     logger: Optional[logging.Logger] = None,
 ) -> Iterator[Any]:
     page = 1
     while True:
-        items: List[Any] = _trakt_request(
+        items: list[Any] = _trakt_request(
             f"{endpoint_bare}?limit={limit}&page={page}", logger=logger
         )
         if len(items) == 0:
@@ -95,7 +96,7 @@ def _trakt_paginate(
             break
 
 
-def full_export(username: str) -> Dict[str, Any]:
+def full_export(username: str) -> dict[str, Any]:
     """Runs a full export for a trakt user"""
     return {
         "type": "full",
@@ -124,7 +125,7 @@ def full_export(username: str) -> Dict[str, Any]:
 
 
 def _history_is_finished(
-    items: List[Any], days: int, now: Optional[float] = None
+    items: list[Any], days: int, now: Optional[float] = None
 ) -> bool:
     from .dal import _parse_trakt_datetime
 
@@ -140,7 +141,7 @@ def _history_is_finished(
 
 def partial_export(
     username: str, pages: Optional[int] = None, days: Optional[int] = None
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """Runs a partial history export for a trakt user, i.e. grabs the first 'n' pages of history entries"""
     is_finished = None
     if days:

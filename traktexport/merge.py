@@ -1,4 +1,4 @@
-from typing import List, Set, Iterator
+from collections.abc import Iterator
 
 from .dal import (
     parse_export,
@@ -9,21 +9,21 @@ from .dal import (
 )
 
 
-def read_and_merge_exports(files: List[str]) -> FullTraktExport:
+def read_and_merge_exports(files: list[str]) -> FullTraktExport:
     """
     Given multiple files as inputs, parses and merges
     the exports into one full, combined export
     """
-    exp: List[TraktExport] = []
+    exp: list[TraktExport] = []
     for fl in files:
-        with open(fl, "r") as f:
+        with open(fl) as f:
             exp.append(parse_export(f))
 
     return merge_exports(exp)
 
 
-def _merge_history_entries(unsorted: List[TraktExport]) -> Iterator[HistoryEntry]:
-    emitted: Set[int] = set()
+def _merge_history_entries(unsorted: list[TraktExport]) -> Iterator[HistoryEntry]:
+    emitted: set[int] = set()
     for u in unsorted:
         for hist in u.history:
             # unique scrobble ID from trakt
@@ -33,14 +33,14 @@ def _merge_history_entries(unsorted: List[TraktExport]) -> Iterator[HistoryEntry
             emitted.add(hist.history_id)
 
 
-def merge_exports(unsorted: List[TraktExport]) -> FullTraktExport:
+def merge_exports(unsorted: list[TraktExport]) -> FullTraktExport:
     """
     Given multiple (parsed) exports, grabs the latest information
     from the most recent full export and returns unique
     history entries
     """
-    full_exports: List[FullTraktExport] = []
-    partial_exports: List[PartialHistoryExport] = []
+    full_exports: list[FullTraktExport] = []
+    partial_exports: list[PartialHistoryExport] = []
 
     # split into full and partial exports
     for u in unsorted:

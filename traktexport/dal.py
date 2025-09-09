@@ -11,15 +11,12 @@ import json
 from datetime import datetime, timezone
 from typing import (
     NamedTuple,
-    List,
-    Dict,
     Any,
     Optional,
-    Iterator,
     Union,
-    Tuple,
     TextIO,
 )
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 TRAKT_BASE = "https://trakt.tv"
@@ -140,19 +137,19 @@ class HistoryEntry:
 
 
 class PartialHistoryExport(NamedTuple):
-    history: List[HistoryEntry]
+    history: list[HistoryEntry]
 
 
 class FullTraktExport(NamedTuple):
     username: str
-    followers: List[Follow]
-    following: List[Follow]
-    likes: List[Like]
-    stats: Dict[str, Any]
-    settings: Dict[str, Any]
-    watchlist: List[WatchListEntry]
-    ratings: List[Rating]
-    history: List[HistoryEntry]
+    followers: list[Follow]
+    following: list[Follow]
+    likes: list[Like]
+    stats: dict[str, Any]
+    settings: dict[str, Any]
+    watchlist: list[WatchListEntry]
+    ratings: list[Rating]
+    history: list[HistoryEntry]
 
 
 def _parse_trakt_datetime(ds: str) -> datetime:
@@ -225,7 +222,7 @@ def _parse_ids(d: Any) -> SiteIds:
     )
 
 
-def _parse_media(d: Any) -> Dict[str, Any]:
+def _parse_media(d: Any) -> dict[str, Any]:
     return dict(
         title=d["title"],
         year=d["year"],
@@ -262,7 +259,7 @@ def _parse_episode(d: Any, show_data: Any) -> Episode:
 # extracts the common schema from ratings/history/watchlist
 def _parse_list_info(
     d: Any,
-) -> Optional[Tuple[str, Union[Movie, Show, Season, Episode]]]:
+) -> Optional[tuple[str, Union[Movie, Show, Season, Episode]]]:
     media_type: str = d["type"]
     media_data_raw = d[media_type]
     media_data: Union[Movie, Show, Season, Episode]
@@ -324,7 +321,7 @@ def _parse_history(d: Any) -> Iterator[HistoryEntry]:
 
 
 # a helper to parse items that are left as python primitives
-def _read_unparsed(f: TextIO, data: Optional[Any] = None) -> Dict[str, Any]:
+def _read_unparsed(f: TextIO, data: Optional[Any] = None) -> dict[str, Any]:
     ldata: Any
     if data is None:
         ldata = json.loads(f.read())
