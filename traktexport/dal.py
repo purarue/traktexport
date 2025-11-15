@@ -19,7 +19,7 @@ from typing import (
 from collections.abc import Iterator
 from dataclasses import dataclass
 
-TRAKT_BASE = "https://trakt.tv"
+TRAKT_BASE = "https://app.trakt.tv"
 
 
 # Note: I currently don't parse the following, because I don't have anything there
