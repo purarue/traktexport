@@ -1,6 +1,5 @@
 import sys
 import json
-from typing import Optional
 from collections.abc import Sequence, Generator
 from contextlib import contextmanager
 
@@ -80,7 +79,7 @@ def _export(username: str) -> None:
     default=None,
     help="Request history till this many days ago",
 )
-def _partial_export(username: str, pages: Optional[int], days: Optional[int]) -> None:
+def _partial_export(username: str, pages: int | None, days: int | None) -> None:
     """
     Run a partial history export - assumes authentication has already been setup
 

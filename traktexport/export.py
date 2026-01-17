@@ -3,7 +3,8 @@ import os
 import logging
 import shlex
 from time import sleep, time
-from typing import Callable, Any, Optional, Literal
+from typing import Any, Literal
+from collections.abc import Callable
 from collections.abc import Iterator
 from datetime import datetime, timedelta
 from functools import lru_cache, partial
@@ -26,7 +27,7 @@ def _check_config() -> None:
 
     # loads config and refreshes token if needed
     client = api()
-    auth: Optional[TokenAuth] = client.auth
+    auth: TokenAuth | None = client.auth
     if auth is None:
         raise ValueError(f"No auth config found on client={client}")
 
@@ -43,7 +44,7 @@ def _trakt_request(
     data: Any = None,
     *,
     sleep_time: int = SLEEP_TIME,
-    logger: Optional[logging.Logger] = None,
+    logger: logging.Logger | None = None,
     method: Literal["get", "put", "post", "patch"] = "get",
 ) -> Any:
     """
@@ -75,9 +76,9 @@ def _trakt_paginate(
     endpoint_bare: str,
     limit: int = 100,
     *,
-    pages: Optional[int] = None,
-    is_finished: Optional[Callable[[list[Any]], bool]] = None,
-    logger: Optional[logging.Logger] = None,
+    pages: int | None = None,
+    is_finished: Callable[[list[Any]], bool] | None = None,
+    logger: logging.Logger | None = None,
 ) -> Iterator[Any]:
     page = 1
     while True:
@@ -125,7 +126,7 @@ def full_export(username: str) -> dict[str, Any]:
 
 
 def _history_is_finished(
-    items: list[Any], days: int, now: Optional[float] = None
+    items: list[Any], days: int, now: float | None = None
 ) -> bool:
     from .dal import _parse_trakt_datetime
 
@@ -140,7 +141,7 @@ def _history_is_finished(
 
 
 def partial_export(
-    username: str, pages: Optional[int] = None, days: Optional[int] = None
+    username: str, pages: int | None = None, days: int | None = None
 ) -> dict[str, Any]:
     """Runs a partial history export for a trakt user, i.e. grabs the first 'n' pages of history entries"""
     is_finished = None

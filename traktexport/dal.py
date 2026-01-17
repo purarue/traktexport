@@ -12,7 +12,6 @@ from datetime import datetime, timezone
 from typing import (
     NamedTuple,
     Any,
-    Optional,
     Union,
     TextIO,
 )
@@ -39,11 +38,11 @@ class Follow(NamedTuple):
 
 class SiteIds(NamedTuple):
     trakt_id: int
-    trakt_slug: Optional[str]
-    imdb_id: Optional[str]
-    tmdb_id: Optional[int]
-    tvdb_id: Optional[int]
-    tvrage_id: Optional[int]
+    trakt_slug: str | None
+    imdb_id: str | None
+    tmdb_id: int | None
+    tvdb_id: int | None
+    tvrage_id: int | None
 
 
 class Movie(NamedTuple):
@@ -109,14 +108,14 @@ class TraktList(NamedTuple):
 class Like(NamedTuple):
     liked_at: datetime
     media_type: str
-    media_data: Union[TraktList, Comment]
+    media_data: TraktList | Comment
 
 
 class WatchListEntry(NamedTuple):
     listed_at: datetime
     listed_at_id: int
     media_type: str
-    media_data: Union[Movie, Show]
+    media_data: Movie | Show
 
 
 @dataclass
@@ -124,7 +123,7 @@ class Rating:
     rated_at: datetime
     rating: int
     media_type: str
-    media_data: Union[Movie, Show, Season, Episode]
+    media_data: Movie | Show | Season | Episode
 
 
 @dataclass
@@ -133,7 +132,7 @@ class HistoryEntry:
     watched_at: datetime
     action: str
     media_type: str
-    media_data: Union[Movie, Episode]
+    media_data: Movie | Episode
 
 
 class PartialHistoryExport(NamedTuple):
@@ -196,7 +195,7 @@ def _parse_likes(d: Any) -> Iterator[Like]:
     for i in d:
         media_type = i["type"]
         media_data_raw = i[media_type]
-        media_data: Union[TraktList, Comment]
+        media_data: TraktList | Comment
         if media_type == "comment":
             media_data = _parse_comment(media_data_raw)
         elif media_type == "list":
@@ -259,10 +258,10 @@ def _parse_episode(d: Any, show_data: Any) -> Episode:
 # extracts the common schema from ratings/history/watchlist
 def _parse_list_info(
     d: Any,
-) -> Optional[tuple[str, Union[Movie, Show, Season, Episode]]]:
+) -> tuple[str, Movie | Show | Season | Episode] | None:
     media_type: str = d["type"]
     media_data_raw = d[media_type]
-    media_data: Union[Movie, Show, Season, Episode]
+    media_data: Movie | Show | Season | Episode
     if media_type == "movie":
         media_data = _parse_movie(media_data_raw)
     elif media_type == "show":
@@ -321,7 +320,7 @@ def _parse_history(d: Any) -> Iterator[HistoryEntry]:
 
 
 # a helper to parse items that are left as python primitives
-def _read_unparsed(f: TextIO, data: Optional[Any] = None) -> dict[str, Any]:
+def _read_unparsed(f: TextIO, data: Any | None = None) -> dict[str, Any]:
     ldata: Any
     if data is None:
         ldata = json.loads(f.read())
